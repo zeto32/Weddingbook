@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 import { collection, onSnapshot, orderBy, query, deleteDoc, doc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../firebase";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export default function Gallery() {
   const [media, setMedia] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState({ done: 0, total: 0 });
 
   useEffect(() => {
     const q = query(collection(db, "media"), orderBy("createdAt", "desc"));
@@ -50,6 +54,51 @@ export default function Gallery() {
     }
   };
 
+  const handleDownloadAll = async () => {
+    if (media.length === 0) return;
+    setDownloading(true);
+    setDownloadProgress({ done: 0, total: media.length });
+
+    const zip = new JSZip();
+    const folder = zip.folder("galeria-casamento");
+
+    try {
+      for (let i = 0; i < media.length; i++) {
+        const item = media[i];
+        const response = await fetch(item.url);
+        const blob = await response.blob();
+
+        // Determinar extensão pelo tipo MIME ou pelo nome original
+        const mimeToExt = {
+          "image/jpeg": "jpg",
+          "image/png": "png",
+          "image/gif": "gif",
+          "image/webp": "webp",
+          "video/mp4": "mp4",
+          "video/quicktime": "mov",
+          "video/webm": "webm",
+        };
+        const ext = mimeToExt[blob.type] || (item.type === "video" ? "mp4" : "jpg");
+        const filename = item.name
+          ? item.name.replace(/[^a-zA-Z0-9._-]/g, "_")
+          : `ficheiro_${i + 1}.${ext}`;
+        const safeName = filename.includes(".") ? filename : `${filename}.${ext}`;
+
+        folder.file(safeName, blob);
+        setDownloadProgress({ done: i + 1, total: media.length });
+      }
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      saveAs(zipBlob, "galeria-casamento.zip");
+    } catch (error) {
+      console.error("Erro ao criar ZIP:", error);
+      alert("Houve um problema ao descarregar os ficheiros. Tenta novamente.");
+    } finally {
+      setDownloading(false);
+      setDownloadProgress({ done: 0, total: 0 });
+    }
+  };
+
   if (loading) {
     return <div className="gallery-loading">A carregar galeria... 💫</div>;
   }
@@ -66,6 +115,22 @@ export default function Gallery() {
     <div className="gallery-section">
       <h2 className="section-title">🎞️ Galeria do casamento</h2>
       <p className="gallery-count">{media.length} momento(s) partilhado(s)</p>
+
+      <button
+        className="download-all-btn"
+        onClick={handleDownloadAll}
+        disabled={downloading}
+        title="Descarregar toda a galeria num ficheiro ZIP"
+      >
+        {downloading ? (
+          <>
+            <span className="download-spinner">⏳</span>
+            A criar ZIP… {downloadProgress.done}/{downloadProgress.total}
+          </>
+        ) : (
+          <>📦 Descarregar tudo em ZIP</>
+        )}
+      </button>
 
       <div className="gallery-grid">
         {media.map((item) => (

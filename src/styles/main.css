@@ -191,6 +191,55 @@ body {
 .gallery-count { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-top: -0.5rem; }
 .gallery-loading, .gallery-empty { text-align: center; color: var(--text-light); padding: 3rem 1rem; font-style: italic; }
 
+/* ── Download ZIP button ── */
+.download-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, var(--gold) 0%, #b8894e 100%);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(201, 169, 110, 0.35);
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.download-all-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(201, 169, 110, 0.45);
+}
+.download-all-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.download-all-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #c9a96e 0%, #b8894e 100%);
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 0.5; }
+}
+
+.download-spinner {
+  display: inline-block;
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
