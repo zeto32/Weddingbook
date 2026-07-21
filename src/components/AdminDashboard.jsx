@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, orderBy, query, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, limit, orderBy, query, startAfter, deleteDoc, doc, getCountFromServer, where } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { signOut } from "firebase/auth";
 import { db, storage, auth } from "../firebase";
@@ -9,25 +9,82 @@ export default function AdminDashboard({ adminUser, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, photos: 0, videos: 0 });
 
-  useEffect(() => {
-    const q = query(collection(db, "media"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      const items = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setMedia(items);
+  // Pagination states
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-      // Calcular estatísticas
-      const photos = items.filter(item => item.type === "image" || !item.type || item.type.startsWith("image")).length;
-      const videos = items.filter(item => item.type === "video" || item.type.startsWith("video")).length;
+  const fetchStats = async () => {
+    try {
+      const [totalSnap, videosSnap] = await Promise.all([
+        getCountFromServer(collection(db, "media")),
+        getCountFromServer(query(collection(db, "media"), where("type", "==", "video")))
+      ]);
+      const total = totalSnap.data().count;
+      const videos = videosSnap.data().count;
+      const photos = total - videos;
       setStats({
-        total: items.length,
+        total: total,
         photos: photos,
         videos: videos
       });
-      setLoading(false);
-    });
+    } catch (error) {
+      console.error("Erro ao obter estatísticas:", error);
+    }
+  };
 
-    return () => unsub();
+  const fetchInitialData = async () => {
+    setLoading(true);
+    try {
+      await fetchStats();
+      const q = query(
+        collection(db, "media"),
+        orderBy("createdAt", "desc"),
+        limit(15)
+      );
+      const snapshot = await getDocs(q);
+      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMedia(items);
+
+      if (snapshot.docs.length > 0) {
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      }
+      setHasMore(snapshot.docs.length === 15);
+    } catch (error) {
+      console.error("Erro ao carregar painel:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
   }, []);
+
+  const fetchMoreData = async () => {
+    if (!lastDoc || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const q = query(
+        collection(db, "media"),
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(15)
+      );
+      const snapshot = await getDocs(q);
+      const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      if (items.length > 0) {
+        setMedia((prev) => [...prev, ...items]);
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      }
+      setHasMore(snapshot.docs.length === 15);
+    } catch (error) {
+      console.error("Erro ao carregar mais dados:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -62,6 +119,20 @@ export default function AdminDashboard({ adminUser, onLogout }) {
           console.warn("Erro ao remover ficheiro do storage (pode já ter sido apagado):", storageErr);
         }
       }
+
+      // Update local list
+      setMedia((prev) => prev.filter((m) => m.id !== item.id));
+
+      // Update local stats count
+      setStats((prev) => {
+        const isVideo = item.type === "video";
+        return {
+          total: Math.max(0, prev.total - 1),
+          videos: isVideo ? Math.max(0, prev.videos - 1) : prev.videos,
+          photos: !isVideo ? Math.max(0, prev.photos - 1) : prev.photos,
+        };
+      });
+
     } catch (error) {
       console.error("Erro ao eliminar item:", error);
       alert("Erro ao tentar eliminar. Tente novamente.");
@@ -87,9 +158,19 @@ export default function AdminDashboard({ adminUser, onLogout }) {
           <h2>Painel de Gestão 👑</h2>
           <p className="admin-email">Sessão iniciada como: {adminUser?.email}</p>
         </div>
-        <button onClick={handleLogout} className="dashboard-logout-btn">
-          🚪 Terminar Sessão
-        </button>
+        <div className="dashboard-header-actions">
+          <button 
+            onClick={fetchInitialData} 
+            className="dashboard-sync-btn"
+            title="Atualizar dados do servidor"
+            disabled={loading}
+          >
+            🔄 Sincronizar
+          </button>
+          <button onClick={handleLogout} className="dashboard-logout-btn">
+            🚪 Terminar Sessão
+          </button>
+        </div>
       </header>
 
       {/* Cartões de Estatísticas */}
@@ -128,73 +209,94 @@ export default function AdminDashboard({ adminUser, onLogout }) {
         ) : media.length === 0 ? (
           <div className="dashboard-empty">Nenhum ficheiro encontrado na galeria.</div>
         ) : (
-          <div className="table-responsive">
-            <table className="management-table">
-              <thead>
-                <tr>
-                  <th>Ficheiro</th>
-                  <th>Autor</th>
-                  <th>Tipo</th>
-                  <th>Data de Envio</th>
-                  <th className="actions-header">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {media.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <div className="table-media-preview">
-                        {item.type === "video" ? (
-                          <div className="preview-video-container">
-                            <video src={item.url} muted className="table-thumb" />
-                            <span className="play-badge">▶</span>
-                          </div>
-                        ) : (
-                          <img src={item.url} alt={item.name} className="table-thumb" />
-                        )}
-                        <span className="table-filename" title={item.name}>
-                          {item.name || "Sem nome"}
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="table-author">{item.author || "Anónimo"}</span>
-                    </td>
-                    <td>
-                      <span className={`type-tag tag-${item.type || "image"}`}>
-                        {item.type === "video" ? "🎥 Vídeo" : "📸 Foto"}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="table-date">{formatDate(item.createdAt)}</span>
-                    </td>
-                    <td>
-                      <div className="table-actions">
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="action-btn view-btn"
-                          title="Ver em tamanho real"
-                        >
-                          👁️
-                        </a>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="action-btn delete-btn-table"
-                          title="Eliminar permanentemente"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="table-responsive">
+              <table className="management-table">
+                <thead>
+                  <tr>
+                    <th>Ficheiro</th>
+                    <th>Autor</th>
+                    <th>Tipo</th>
+                    <th>Data de Envio</th>
+                    <th className="actions-header">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {media.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="table-media-preview">
+                          {item.type === "video" ? (
+                            <div className="preview-video-container">
+                              <video src={item.url} muted className="table-thumb" preload="none" />
+                              <span className="play-badge">▶</span>
+                            </div>
+                          ) : (
+                            <img src={item.url} alt={item.name} className="table-thumb" loading="lazy" />
+                          )}
+                          <span className="table-filename" title={item.name}>
+                            {item.name || "Sem nome"}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="table-author">{item.author || "Anónimo"}</span>
+                      </td>
+                      <td>
+                        <span className={`type-tag tag-${item.type || "image"}`}>
+                          {item.type === "video" ? "🎥 Vídeo" : "📸 Foto"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="table-date">{formatDate(item.createdAt)}</span>
+                      </td>
+                      <td>
+                        <div className="table-actions">
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="action-btn view-btn"
+                            title="Ver em tamanho real"
+                          >
+                            👁️
+                          </a>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            className="action-btn delete-btn-table"
+                            title="Eliminar permanentemente"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {hasMore && (
+              <div className="load-more-container">
+                <button 
+                  className="load-more-btn" 
+                  onClick={fetchMoreData} 
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? (
+                    <>
+                      <span className="download-spinner">⏳</span> A carregar...
+                    </>
+                  ) : (
+                    "Carregar mais ficheiros 📂"
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>
   );
 }
+

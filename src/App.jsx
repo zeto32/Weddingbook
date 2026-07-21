@@ -49,7 +49,7 @@ export default function App() {
       }
       return <AdminLogin onLoginSuccess={(user) => setAdminUser(user)} />;
     }
-    return tab === "upload" ? <UploadSection /> : <Gallery />;
+    return tab === "upload" ? <UploadSection /> : <Gallery isAdmin={!!adminUser} />;
   };
 
   return (

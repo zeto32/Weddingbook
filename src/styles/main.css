@@ -296,6 +296,43 @@ body {
   text-overflow: ellipsis;
 }
 
+/* ── Load More Button ── */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.load-more-btn {
+  padding: 0.75rem 2rem;
+  background: var(--white);
+  border: 1.5px solid var(--rose);
+  color: var(--rose-dark);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow);
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: var(--rose);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+.load-more-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ── Lightbox ── */
 .lightbox {
   position: fixed;
@@ -571,6 +608,38 @@ body {
   color: #ff6b6b;
 }
 
+.dashboard-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.dashboard-sync-btn {
+  background: var(--white);
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dashboard-sync-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--white);
+}
+
+.dashboard-sync-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Cartões de Estatísticas */
 .stats-grid {
   display: grid;
@@ -809,3 +878,36 @@ body {
   background: #ffeded;
   border-color: #ffc9c9;
 }
+
+/* ── Download Admin Warning ── */
+.download-admin-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.download-disclaimer {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.45;
+  text-align: center;
+  background: #fff9f6;
+  border: 1px dashed var(--rose);
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+}
+
+.download-disclaimer strong {
+  color: #c0392b;
+}
+
+.download-disclaimer code {
+  background: #f7eae5;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--rose-dark);
+}
+
