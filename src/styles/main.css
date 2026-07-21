@@ -614,6 +614,32 @@ body {
   align-items: center;
 }
 
+.dashboard-clear-btn {
+  background: var(--white);
+  border: 1.5px solid #ff6b6b;
+  color: #ff6b6b;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dashboard-clear-btn:hover:not(:disabled) {
+  background: #ff6b6b;
+  color: var(--white);
+}
+
+.dashboard-clear-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .dashboard-sync-btn {
   background: var(--white);
   border: 1.5px solid var(--gold);

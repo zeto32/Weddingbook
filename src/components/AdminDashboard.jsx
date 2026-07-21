@@ -139,6 +139,65 @@ export default function AdminDashboard({ adminUser, onLogout }) {
     }
   };
 
+  const handleClearGallery = async () => {
+    if (!window.confirm("ATENÇÃO! 🚨 Tens a certeza absoluta que queres eliminar TODOS os ficheiros da galeria e da base de dados para sempre?\nEsta ação é irreversível!")) {
+      return;
+    }
+    const confirmation = window.prompt("Para prosseguir e apagar tudo, escreve 'LIMPAR' no campo abaixo:");
+    if (confirmation !== "LIMPAR") {
+      alert("Ação cancelada. Nada foi apagado.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const q = query(collection(db, "media"));
+      const snapshot = await getDocs(q);
+      const allItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      if (allItems.length === 0) {
+        alert("A galeria já está vazia!");
+        setLoading(false);
+        return;
+      }
+
+      let deletedCount = 0;
+      for (const item of allItems) {
+        // Apagar do Firestore
+        await deleteDoc(doc(db, "media", item.id));
+
+        // Apagar do Storage
+        if (item.url) {
+          try {
+            const decodedUrl = decodeURIComponent(item.url);
+            const startIndex = decodedUrl.indexOf("/o/") + 3;
+            const endIndex = decodedUrl.indexOf("?");
+            if (startIndex > 2 && endIndex > startIndex) {
+              const filePath = decodedUrl.substring(startIndex, endIndex);
+              const storageRef = ref(storage, filePath);
+              await deleteObject(storageRef);
+            }
+          } catch (storageErr) {
+            console.warn("Erro ao apagar do Storage:", storageErr);
+          }
+        }
+        deletedCount++;
+      }
+
+      alert(`Galeria limpa com sucesso! Foram eliminados ${deletedCount} ficheiros.`);
+      
+      setMedia([]);
+      setStats({ total: 0, photos: 0, videos: 0 });
+      setLastDoc(null);
+      setHasMore(false);
+    } catch (error) {
+      console.error("Erro ao limpar galeria:", error);
+      alert("Houve um erro ao tentar limpar a galeria. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -159,6 +218,14 @@ export default function AdminDashboard({ adminUser, onLogout }) {
           <p className="admin-email">Sessão iniciada como: {adminUser?.email}</p>
         </div>
         <div className="dashboard-header-actions">
+          <button 
+            onClick={handleClearGallery} 
+            className="dashboard-clear-btn"
+            title="Eliminar todos os ficheiros da galeria e base de dados"
+            disabled={loading}
+          >
+            🗑️ Limpar Galeria
+          </button>
           <button 
             onClick={fetchInitialData} 
             className="dashboard-sync-btn"
