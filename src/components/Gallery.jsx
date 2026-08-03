@@ -40,7 +40,7 @@ export default function Gallery({ isAdmin }) {
       const snapshot = await getDocs(q);
       const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setMedia(items);
-      
+
       if (snapshot.docs.length > 0) {
         setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
       }
@@ -68,7 +68,7 @@ export default function Gallery({ isAdmin }) {
       );
       const snapshot = await getDocs(q);
       const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      
+
       if (items.length > 0) {
         setMedia((prev) => [...prev, ...items]);
         setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
@@ -133,7 +133,7 @@ export default function Gallery({ isAdmin }) {
       setDownloadProgress({ done: 0, total: allItems.length });
 
       const zip = new JSZip();
-      const folder = zip.folder("galeria-casamento");
+      const folder = zip.folder("galeria-batizado");
 
       for (let i = 0; i < allItems.length; i++) {
         const item = allItems[i];
@@ -161,7 +161,7 @@ export default function Gallery({ isAdmin }) {
       }
 
       const zipBlob = await zip.generateAsync({ type: "blob" });
-      saveAs(zipBlob, "galeria-casamento.zip");
+      saveAs(zipBlob, "galeria-batizado-guilherme.zip");
     } catch (error) {
       console.error("Erro ao criar ZIP:", error);
       alert("Houve um problema ao descarregar os ficheiros. Tenta novamente.");
@@ -185,7 +185,7 @@ export default function Gallery({ isAdmin }) {
 
   return (
     <div className="gallery-section">
-      <h2 className="section-title">🎞️ Galeria do casamento</h2>
+      <h2 className="section-title">🎞️ Galeria do batizado</h2>
       <p className="gallery-count">{totalCount} momento(s) partilhado(s)</p>
 
       {isAdmin && (
@@ -219,19 +219,19 @@ export default function Gallery({ isAdmin }) {
             onClick={() => setSelected(item)}
           >
             {item.type === "video" ? (
-              <video 
-                src={item.url} 
-                className="gallery-thumb" 
-                muted 
-                preload="metadata" 
-                playsInline 
+              <video
+                src={item.url}
+                className="gallery-thumb"
+                muted
+                preload="metadata"
+                playsInline
               />
             ) : (
-              <img 
-                src={item.url} 
-                alt={item.name} 
-                className="gallery-thumb" 
-                loading="lazy" 
+              <img
+                src={item.url}
+                alt={item.name}
+                className="gallery-thumb"
+                loading="lazy"
               />
             )}
             {item.type === "video" && <span className="video-badge">▶</span>}
@@ -244,9 +244,9 @@ export default function Gallery({ isAdmin }) {
 
       {hasMore && (
         <div className="load-more-container">
-          <button 
-            className="load-more-btn" 
-            onClick={fetchMoreMedia} 
+          <button
+            className="load-more-btn"
+            onClick={fetchMoreMedia}
             disabled={loadingMore}
           >
             {loadingMore ? (
@@ -272,8 +272,8 @@ export default function Gallery({ isAdmin }) {
             {selected.author && (
               <p className="lightbox-author">📷 {selected.author}</p>
             )}
-            <button 
-              className="delete-btn" 
+            <button
+              className="delete-btn"
               onClick={() => handleDelete(selected)}
               title="Apagar momento"
             >

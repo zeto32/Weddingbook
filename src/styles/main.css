@@ -1,7 +1,8 @@
 /* ── Variáveis ── */
 :root {
-  --rose: #c8a4a4;
-  --rose-dark: #a07a7a;
+  --primary: #83a6a0;
+  --primary-rgb: 131, 166, 160;
+  --primary-dark: #5f7e7a;
   --cream: #fdf8f3;
   --gold: #c9a96e;
   --text: #4a3728;
@@ -57,7 +58,7 @@ body {
 
 .header-divider {
   font-size: 1.6rem;
-  color: var(--rose);
+  color: var(--primary);
   margin-top: 1.2rem;
 }
 
@@ -68,7 +69,7 @@ body {
   margin: 1.5rem 1.5rem 0;
   border-radius: 12px;
   overflow: hidden;
-  border: 1.5px solid var(--rose);
+  border: 1.5px solid var(--primary);
 }
 
 .tab-btn {
@@ -84,7 +85,7 @@ body {
 }
 
 .tab-btn.active {
-  background: var(--rose);
+  background: var(--primary);
   color: var(--white);
   font-weight: 600;
 }
@@ -121,20 +122,20 @@ body {
   outline: none;
   transition: border-color 0.2s;
 }
-.name-input:focus { border-color: var(--rose); }
+.name-input:focus { border-color: var(--primary); }
 .name-input::placeholder { color: var(--text-light); }
 
 .dropzone {
-  border: 2px dashed var(--rose);
+  border: 2px dashed var(--primary);
   border-radius: 14px;
   padding: 2.5rem 1rem;
   text-align: center;
   cursor: pointer;
-  background: #fff9f7;
+  background: #f2f6f5;
   color: var(--text-light);
   transition: background 0.2s, border-color 0.2s;
 }
-.dropzone:hover { background: #fff3ee; border-color: var(--rose-dark); }
+.dropzone:hover { background: #e6eeec; border-color: var(--primary-dark); }
 
 .drop-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .drop-hint { font-size: 0.8rem; margin-top: 0.25rem; opacity: 0.6; }
@@ -162,13 +163,13 @@ body {
 }
 .progress-fill {
   height: 100%;
-  background: var(--rose);
+  background: var(--primary);
   transition: width 0.3s;
 }
 
 .upload-btn {
   padding: 0.9rem;
-  background: var(--rose);
+  background: var(--primary);
   color: var(--white);
   border: none;
   border-radius: 12px;
@@ -177,7 +178,7 @@ body {
   cursor: pointer;
   transition: background 0.2s, opacity 0.2s;
 }
-.upload-btn:hover:not(:disabled) { background: var(--rose-dark); }
+.upload-btn:hover:not(:disabled) { background: var(--primary-dark); }
 .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .success-msg {
@@ -307,8 +308,8 @@ body {
 .load-more-btn {
   padding: 0.75rem 2rem;
   background: var(--white);
-  border: 1.5px solid var(--rose);
-  color: var(--rose-dark);
+  border: 1.5px solid var(--primary);
+  color: var(--primary-dark);
   font-family: inherit;
   font-size: 0.95rem;
   font-weight: 600;
@@ -319,7 +320,7 @@ body {
 }
 
 .load-more-btn:hover:not(:disabled) {
-  background: var(--rose);
+  background: var(--primary);
   color: var(--white);
   transform: translateY(-1px);
 }
@@ -426,7 +427,7 @@ body {
 
 .footer-admin-btn:hover {
   opacity: 1;
-  color: var(--rose-dark);
+  color: var(--primary-dark);
 }
 
 /* ── Admin Login ── */
@@ -452,7 +453,7 @@ body {
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 420px;
-  border: 1px solid rgba(200, 164, 164, 0.2);
+  border: 1px solid rgba(131, 166, 160, 0.2);
 }
 
 .admin-login-header {
@@ -523,12 +524,12 @@ body {
 }
 
 .form-group input:focus {
-  border-color: var(--rose);
+  border-color: var(--primary);
   background: var(--white);
 }
 
 .admin-login-btn {
-  background: var(--rose);
+  background: var(--primary);
   color: var(--white);
   padding: 0.8rem;
   border: none;
@@ -538,12 +539,12 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 4px 12px rgba(200, 164, 164, 0.3);
+  box-shadow: 0 4px 12px rgba(131, 166, 160, 0.3);
   margin-top: 0.5rem;
 }
 
 .admin-login-btn:hover:not(:disabled) {
-  background: var(--rose-dark);
+  background: var(--primary-dark);
 }
 
 .admin-login-btn:active:not(:disabled) {
@@ -561,7 +562,7 @@ body {
   border-radius: 16px;
   box-shadow: var(--shadow);
   padding: 2rem;
-  border: 1px solid rgba(200, 164, 164, 0.2);
+  border: 1px solid rgba(131, 166, 160, 0.2);
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -688,8 +689,8 @@ body {
 }
 
 .photo-card {
-  background: linear-gradient(135deg, #fcfcfc 0%, #f4e9e9 100%);
-  border: 1px solid #e5d2d2;
+  background: linear-gradient(135deg, #fbfcfc 0%, #edf3f2 100%);
+  border: 1px solid #c9dad7;
 }
 
 .video-card {
@@ -731,7 +732,7 @@ body {
   font-size: 1.15rem;
   font-weight: 400;
   color: var(--text);
-  border-left: 3px solid var(--rose);
+  border-left: 3px solid var(--primary);
   padding-left: 0.5rem;
   text-align: left;
 }
@@ -839,9 +840,9 @@ body {
 }
 
 .tag-image {
-  background: #fbf3f3;
-  color: #b78a8a;
-  border: 1px solid #f2dfdf;
+  background: #f4ece8;
+  color: #a9806e;
+  border: 1px solid #ebd8cc;
 }
 
 .tag-video {
@@ -918,8 +919,8 @@ body {
   color: var(--text-light);
   line-height: 1.45;
   text-align: center;
-  background: #fff9f6;
-  border: 1px dashed var(--rose);
+  background: #f2f6f5;
+  border: 1px dashed var(--primary);
   padding: 0.85rem 1rem;
   border-radius: 10px;
 }
@@ -929,11 +930,11 @@ body {
 }
 
 .download-disclaimer code {
-  background: #f7eae5;
+  background: #e2ecea;
   padding: 0.15rem 0.35rem;
   border-radius: 4px;
   font-family: monospace;
   font-weight: 600;
-  color: var(--rose-dark);
+  color: var(--primary-dark);
 }
 
